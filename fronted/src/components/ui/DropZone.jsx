@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Box, Typography, Button } from '@mui/material';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-
 import ErrorModal from '../modals/errorModal';
 
-const Dropzone = ({ onDrop, onRemoveFile }) => {
+const Dropzone = ({ onDrop, onRemoveFile, file }) => {
   const [fileInfo, setFileInfo] = useState(null);
   const [openError, setOpenError] = useState(false); // Estado para controlar el modal de error
 
@@ -21,7 +20,8 @@ const Dropzone = ({ onDrop, onRemoveFile }) => {
 
       const file = acceptedFiles[0];
       if (file) {
-        setFileInfo({ name: file.name, type: file.type });
+        setFileInfo(file);
+        console.log("Archivo cargado:", file);
       }
       onDrop(acceptedFiles); // Informar al componente padre del archivo cargado
     },
@@ -35,6 +35,21 @@ const Dropzone = ({ onDrop, onRemoveFile }) => {
 
   const handleCloseError = () => {
     setOpenError(false); // Cerrar el modal de error
+  };
+
+  // Limpiar el archivo cuando se reinicie el proceso
+  useEffect(() => {
+    if (!file) {
+      setFileInfo(null); // Limpiar el estado del archivo si el archivo en el componente padre es null
+    }
+  }, [file]);
+
+  // Función para truncar el nombre del archivo si es demasiado largo
+  const truncateFileName = (name, maxLength = 40) => {
+    if (name.length > maxLength) {
+      return name.substring(0, maxLength - 3) + '...';
+    }
+    return name;
   };
 
   return (
@@ -71,7 +86,7 @@ const Dropzone = ({ onDrop, onRemoveFile }) => {
             Archivo seleccionado:
           </Typography>
           <Typography variant="subtitle1" color="textSecondary">
-            {fileInfo.name} ({fileInfo.type})
+            {truncateFileName(fileInfo.name)} ({fileInfo.type})
           </Typography>
           <Button 
             variant="outlined" 
