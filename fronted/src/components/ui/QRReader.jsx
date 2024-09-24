@@ -1,58 +1,96 @@
 import React, { useState } from 'react';
-import { QrReader } from 'react-qr-reader';
-import { Box, Typography, Button } from '@mui/material';
+import { Container, Typography, Button, Box, TextField } from '@mui/material';
+import axios from 'axios';
 
-const QrReaderComponent = () => {
-  const [qrData, setQrData] = useState(null);
-  const [error, setError] = useState(null);
+const QRCodeScanner = () => {
+  const [file, setFile] = useState(null);
+  const [scanResult, setScanResult] = useState('');
 
-  const handleScan = (data) => {
-    if (data) {
-      setQrData(data);
-      setError(null); // Reiniciar error si la lectura fue exitosa
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/scan-qr`, formData, {
+            headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        setScanResult(response.data.qrCodeData);
+      } catch (error) {
+        console.error('Error al escanear el código QR:', error);
+        setScanResult('Error al escanear el código QR.');
+      }
+
+      setFile(file);
     }
   };
 
-  const handleError = (err) => {
-    console.error('Error leyendo el QR:', err);
-    setError('Error al escanear el código QR, intenta nuevamente.');
-  };
-
   return (
-    <Box sx={{ textAlign: 'center', marginTop: '20px' }}>
-      <Typography variant="h5">Escanea un código QR</Typography>
+    <Container sx={{ textAlign: 'center', marginTop: '20px' }}>
+      <Typography variant="h4" sx={{ marginBottom: '20px' }}>
+        Escanear código QR desde una imagen
+      </Typography>
 
-      <Box sx={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
-        <QrReader
-          onResult={(result, error) => {
-            if (result) {
-              handleScan(result?.text);
-            }
-            if (error) {
-              handleError(error);
-            }
+      {/* Contenedor de Dropzone y Botón de Selección */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+        <Button
+          variant="contained"
+          component="label"
+          sx={{
+            backgroundColor: '#1976d2',
+            color: '#fff',
+            padding: '10px 20px',
+            mb: 2,
+            '&:hover': { backgroundColor: '#115293' },
           }}
-          constraints={{ facingMode: 'environment' }}
-          style={{ width: '300px' }}
-        />
+        >
+          Elegir archivo
+          <input type="file" hidden accept="image/*" onChange={handleFileChange} />
+        </Button>
+
+        {/* Mostrar nombre del archivo */}
+        {file && (
+          <Typography variant="body1" color="textSecondary" sx={{ mb: 2 }}>
+            Archivo seleccionado: {file.name}
+          </Typography>
+        )}
+
+        {/* Botón para escanear */}
+        <Button
+          variant="contained"
+          color="success"
+          onClick={handleFileChange}
+          sx={{ padding: '10px 20px' }}
+          disabled={!file}
+        >
+          Escanear QR
+        </Button>
       </Box>
 
-      {error && (
-        <Typography variant="body2" color="error" sx={{ marginTop: '20px' }}>
-          {error}
-        </Typography>
-      )}
-
-      {qrData && (
-        <Box mt={4}>
-          <Typography variant="h6" color="primary">
-            ¡Datos del QR escaneado!
+      {/* Mostrar resultado del escaneo */}
+      {scanResult && (
+        <Box sx={{ marginTop: '20px', textAlign: 'center', backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '8px' }}>
+          <Typography variant="h6" sx={{ marginBottom: '10px' }}>
+            Resultado del escaneo:
           </Typography>
-          <Typography variant="subtitle1">{qrData}</Typography>
+          <TextField
+            value={scanResult}
+            multiline
+            rows={2}
+            variant="outlined"
+            sx={{ width: '100%', textAlign: 'center' }}
+            InputProps={{
+              readOnly: true,
+            }}
+          />
         </Box>
       )}
-    </Box>
+    </Container>
   );
 };
 
-export default QrReaderComponent;
+export default QRCodeScanner;
