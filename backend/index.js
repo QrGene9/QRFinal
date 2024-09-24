@@ -82,6 +82,10 @@ app.get('/download/:fileName', (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.send('Bienvenido al servidor de generación de QR');
+});
+
 // Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
