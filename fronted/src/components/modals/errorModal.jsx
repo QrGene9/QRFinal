@@ -1,13 +1,13 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material';
 
-const ErrorModal = ({ open, handleClose }) => {
+const ErrorModal = ({ open, handleClose, errorMessage }) => {
   return (
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>Error</DialogTitle>
       <DialogContent>
         <Typography>
-          Solo se permiten archivos en formato PDF. Por favor, seleccione un archivo válido.
+          {errorMessage || 'Solo se permiten archivos en formato PDF. Por favor, seleccione un archivo válido.'}
         </Typography>
       </DialogContent>
       <DialogActions>
