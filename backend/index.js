@@ -2,11 +2,12 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const QRCode = require('qrcode');
-const fs = require('fs');
 const cors = require('cors');
+const { removeOldestFiles, getDirectorySize } = require('./functions/fileManager');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
 
 // Habilitar CORS
 app.use(cors());
@@ -14,7 +15,7 @@ app.use(cors());
 // Configurar multer para manejar la carga de archivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Carpeta donde se guardan los archivos
+    cb(null, UPLOADS_DIR); // Carpeta donde se guardan los archivos
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname)); // Nombre único del archivo
@@ -24,13 +25,18 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Middleware para servir archivos estáticos desde la carpeta uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 // Ruta para subir el archivo y generar un QR con la URL de descarga
 app.post('/upload', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       throw new Error('No se ha proporcionado ningún archivo');
+    }
+
+    // Comprobar el tamaño de la carpeta y eliminar archivos antiguos si es necesario
+    if (getDirectorySize(UPLOADS_DIR) > 800 * 1024 * 1024) { // Si supera 800 MB
+      removeOldestFiles(UPLOADS_DIR); // Eliminar los más antiguos hasta reducir 200 MB
     }
 
     const fileName = req.file.filename; // Nombre del archivo subido
@@ -49,7 +55,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 // Ruta para descargar el archivo y forzar la descarga
 app.get('/download/:fileName', (req, res) => {
   try {
-    const filePath = path.join(__dirname, 'uploads', req.params.fileName);
+    const filePath = path.join(UPLOADS_DIR, req.params.fileName);
 
     // Verifica si el archivo existe
     if (!fs.existsSync(filePath)) {
@@ -68,12 +74,6 @@ app.get('/download/:fileName', (req, res) => {
     console.error('Error durante la descarga del archivo:', error.message);
     res.status(500).json({ error: 'Error inesperado durante la descarga del archivo', details: error.message });
   }
-});
-
-// Middleware global para manejar cualquier otro error inesperado
-app.use((err, req, res, next) => {
-  console.error('Error no manejado:', err.stack);
-  res.status(500).json({ error: 'Error interno del servidor', details: err.message });
 });
 
 // Iniciar el servidor
