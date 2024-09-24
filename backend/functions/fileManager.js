@@ -40,7 +40,6 @@ const removeOldestFiles = (directory) => {
     console.log(`Archivo eliminado: ${oldestFile.name}`);
     
     if (spaceFreed >= DELETE_SIZE) {
-        console.log(`No Se liberaro MB de espacio.`);
       break;
     }
   }

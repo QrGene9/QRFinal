@@ -2,8 +2,9 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const QRCode = require('qrcode');
+const fs = require('fs');
 const cors = require('cors');
-const { removeOldestFiles, getDirectorySize } = require('./functions/fileManager');
+const { getDirectorySize, removeOldestFiles } = require('./functions/fileManager'); // Importar las funciones
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,6 +16,10 @@ app.use(cors());
 // Configurar multer para manejar la carga de archivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    // Crear la carpeta 'uploads' si no existe
+    if (!fs.existsSync(UPLOADS_DIR)) {
+      fs.mkdirSync(UPLOADS_DIR);
+    }
     cb(null, UPLOADS_DIR); // Carpeta donde se guardan los archivos
   },
   filename: (req, file, cb) => {
@@ -35,7 +40,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     }
 
     // Comprobar el tamaño de la carpeta y eliminar archivos antiguos si es necesario
-    if (getDirectorySize(UPLOADS_DIR) > 800 * 1024 * 1024) { // Si supera 800 MB
+    const currentSize = getDirectorySize(UPLOADS_DIR);
+    if (currentSize > 800 * 1024 * 1024) { // Si supera 800 MB
       removeOldestFiles(UPLOADS_DIR); // Eliminar los más antiguos hasta reducir 200 MB
     }
 
