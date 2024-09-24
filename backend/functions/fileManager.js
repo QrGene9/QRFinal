@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 // Límite de espacio en bytes (800 MB en este ejemplo)
-const MAX_STORAGE_SIZE = 800 * 1024 * 1024; // 800 MB
-const DELETE_SIZE = 200 * 1024 * 1024; // 200 MB a eliminar
+const MAX_STORAGE_SIZE = 5 * 1024 * 1024; // 800 MB
+const DELETE_SIZE = 2 * 1024 * 1024; // 200 MB a eliminar
 
 // Función para obtener el tamaño total de la carpeta 'uploads'
 const getDirectorySize = (directory) => {
