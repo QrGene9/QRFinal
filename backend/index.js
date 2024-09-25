@@ -34,7 +34,7 @@ const upload = multer({ storage });
 // Middleware para servir archivos estáticos desde la carpeta uploads
 app.use('/uploads', express.static(UPLOADS_DIR));
 
-// Ruta para subir el archivo y generar un QR con la URL de descarga del frontend
+// Ruta para subir el archivo y generar un QR con la URL de descarga directa
 app.post('/upload', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
@@ -47,9 +47,9 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     }
 
     const fileName = req.file.filename;
-    const fileUrl = `${process.env.FRONTEND_URL}/download/${fileName}`; // URL del frontend
+    const fileUrl = `${process.env.BACKEND_URL}/download/${fileName}`; // URL del backend para descarga directa
 
-    // Generar el código QR basado en la URL del frontend
+    // Generar el código QR basado en la URL del backend
     const qrCodeData = await QRCode.toDataURL(fileUrl);
 
     res.json({ qrCodeData });
@@ -58,7 +58,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-// Ruta para descargar el archivo
+// Ruta para descargar el archivo directamente
 app.get('/download/:fileName', (req, res) => {
   try {
     const filePath = path.join(UPLOADS_DIR, req.params.fileName);
@@ -67,6 +67,7 @@ app.get('/download/:fileName', (req, res) => {
       return res.status(404).json({ error: 'Archivo no encontrado' });
     }
 
+    // Descargar el archivo automáticamente
     res.setHeader('Content-Disposition', `attachment; filename="${req.params.fileName}"`);
     res.download(filePath, req.params.fileName, (err) => {
       if (err) {
