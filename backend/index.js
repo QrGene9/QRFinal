@@ -4,7 +4,7 @@ const path = require('path');
 const QRCode = require('qrcode');
 const fs = require('fs');
 const cors = require('cors');
-const { getDirectorySize, removeOldestFiles } = require('./functions/fileManager'); // Importar las funciones
+const { getDirectorySize, removeOldestFiles } = require('./functions/fileManager');
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -12,6 +12,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const CUSTOM_DOMAIN = process.env.BACKEND_URL || 'https://qrfinal-vd6b.onrender.com';
 
 // Habilitar CORS
 app.use(cors());
@@ -48,12 +49,10 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     const fileName = req.file.filename;
 
-    // Generar la URL del backend dinámicamente utilizando la solicitud entrante
-    const protocol = req.protocol; // http o https
-    const host = req.get('host'); // host + puerto (si es necesario)
-    const fileUrl = `${protocol}://${host}/download/${fileName}`;
+    // Generar la URL del backend utilizando la variable de entorno CUSTOM_DOMAIN
+    const fileUrl = `${CUSTOM_DOMAIN}/download/${fileName}`;
 
-    // Generar el código QR basado en la URL del backend generada dinámicamente
+    // Generar el código QR basado en la URL del backend
     const qrCodeData = await QRCode.toDataURL(fileUrl);
 
     res.json({ qrCodeData });
@@ -90,5 +89,5 @@ app.get('/', (req, res) => {
 
 // Iniciar el servidor
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+  console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
