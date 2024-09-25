@@ -42,7 +42,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     }
 
     const currentSize = getDirectorySize(UPLOADS_DIR);
-    if (currentSize > 800 * 1024 * 1024) { 
+    if (currentSize > 800 * 1024 * 1024) {
       removeOldestFiles(UPLOADS_DIR);
     }
 
@@ -54,8 +54,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     res.json({ qrCodeData });
   } catch (error) {
-    console.error('Error al subir el archivo o generar el código QR:', error.message);
-    res.status(500).json({ error: 'Error al subir el archivo o generar el código QR', details: error.message });
+    res.status(500).json({ error: 'Error al subir el archivo o generar el código QR' });
   }
 });
 
@@ -71,16 +70,20 @@ app.get('/download/:fileName', (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="${req.params.fileName}"`);
     res.download(filePath, req.params.fileName, (err) => {
       if (err) {
-        console.error('Error al descargar el archivo:', err.message);
-        return res.status(500).json({ error: 'Error al descargar el archivo', details: err.message });
+        return res.status(500).json({ error: 'Error al descargar el archivo' });
       }
     });
   } catch (error) {
-    console.error('Error durante la descarga del archivo:', error.message);
-    res.status(500).json({ error: 'Error inesperado durante la descarga del archivo', details: error.message });
+    res.status(500).json({ error: 'Error inesperado durante la descarga del archivo' });
   }
 });
 
+// Ruta principal
+app.get('/', (req, res) => {
+  res.send('¡Servidor en línea!');
+});
+
+// Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
