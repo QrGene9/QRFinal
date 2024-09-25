@@ -5,6 +5,9 @@ const QRCode = require('qrcode');
 const fs = require('fs');
 const cors = require('cors');
 const { getDirectorySize, removeOldestFiles } = require('./functions/fileManager'); // Importar las funciones
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -16,14 +19,13 @@ app.use(cors());
 // Configurar multer para manejar la carga de archivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Crear la carpeta 'uploads' si no existe
     if (!fs.existsSync(UPLOADS_DIR)) {
       fs.mkdirSync(UPLOADS_DIR);
     }
-    cb(null, UPLOADS_DIR); // Carpeta donde se guardan los archivos
+    cb(null, UPLOADS_DIR);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Nombre único del archivo
+    cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 
@@ -32,43 +34,40 @@ const upload = multer({ storage });
 // Middleware para servir archivos estáticos desde la carpeta uploads
 app.use('/uploads', express.static(UPLOADS_DIR));
 
-// Ruta para subir el archivo y generar un QR con la URL de descarga
+// Ruta para subir el archivo y generar un QR con la URL de descarga del frontend
 app.post('/upload', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       throw new Error('No se ha proporcionado ningún archivo');
     }
 
-    // Comprobar el tamaño de la carpeta y eliminar archivos antiguos si es necesario
     const currentSize = getDirectorySize(UPLOADS_DIR);
-    if (currentSize > 800 * 1024 * 1024) { // Si supera 800 MB
-      removeOldestFiles(UPLOADS_DIR); // Eliminar los más antiguos hasta reducir 200 MB
+    if (currentSize > 800 * 1024 * 1024) { 
+      removeOldestFiles(UPLOADS_DIR);
     }
 
-    const fileName = req.file.filename; // Nombre del archivo subido
-    const fileUrl = `${req.protocol}://${req.get('host')}/download/${fileName}`; // URL para descargar el archivo
+    const fileName = req.file.filename;
+    const fileUrl = `${process.env.FRONTEND_URL}/download/${fileName}`; // URL del frontend
 
-    // Generar el código QR basado en la URL del archivo
+    // Generar el código QR basado en la URL del frontend
     const qrCodeData = await QRCode.toDataURL(fileUrl);
 
-    res.json({ qrCodeData }); // Enviar el código QR al frontend
+    res.json({ qrCodeData });
   } catch (error) {
     console.error('Error al subir el archivo o generar el código QR:', error.message);
     res.status(500).json({ error: 'Error al subir el archivo o generar el código QR', details: error.message });
   }
 });
 
-// Ruta para descargar el archivo y forzar la descarga
+// Ruta para descargar el archivo
 app.get('/download/:fileName', (req, res) => {
   try {
     const filePath = path.join(UPLOADS_DIR, req.params.fileName);
 
-    // Verifica si el archivo existe
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'Archivo no encontrado' });
     }
 
-    // Forzar la descarga del archivo
     res.setHeader('Content-Disposition', `attachment; filename="${req.params.fileName}"`);
     res.download(filePath, req.params.fileName, (err) => {
       if (err) {
@@ -82,11 +81,6 @@ app.get('/download/:fileName', (req, res) => {
   }
 });
 
-app.get('/', (req, res) => {
-  res.send('Bienvenido al servidor de generación de QR');
-});
-
-// Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
