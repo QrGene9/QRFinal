@@ -47,9 +47,13 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     }
 
     const fileName = req.file.filename;
-    const fileUrl = `${process.env.BACKEND_URL}/download/${fileName}`; // URL del backend para descarga directa
 
-    // Generar el código QR basado en la URL del backend
+    // Generar la URL del backend dinámicamente utilizando la solicitud entrante
+    const protocol = req.protocol; // http o https
+    const host = req.get('host'); // host + puerto (si es necesario)
+    const fileUrl = `${protocol}://${host}/download/${fileName}`;
+
+    // Generar el código QR basado en la URL del backend generada dinámicamente
     const qrCodeData = await QRCode.toDataURL(fileUrl);
 
     res.json({ qrCodeData });
