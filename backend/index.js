@@ -26,7 +26,11 @@ const storage = multer.diskStorage({
     cb(null, UPLOADS_DIR);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+    // Generar un nombre de archivo con el formato requerido
+    const timestamp = Date.now(); // Números de la marca de tiempo
+    const extension = path.extname(file.originalname); // Obtener la extensión del archivo
+    const newName = `reportecc_reportetriaf_${timestamp}${extension}`; // Crear el nombre personalizado
+    cb(null, newName);
   },
 });
 
@@ -50,7 +54,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const fileName = req.file.filename;
 
     // Generar la URL del backend utilizando la variable de entorno CUSTOM_DOMAIN
-    const fileUrl = `${CUSTOM_DOMAIN}/download/${fileName}`;
+    const fileUrl = `${CUSTOM_DOMAIN}/cl-ti-itreporteec-visor/reporteec/reportecertificado/descarga?doc=/${fileName}`;
 
     // Generar el código QR basado en la URL del backend
     const qrCodeData = await QRCode.toDataURL(fileUrl);
@@ -61,18 +65,22 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-// Ruta para descargar el archivo directamente
-app.get('/download/:fileName', (req, res) => {
+// Ruta para descargar el archivo directamente usando la estructura personalizada
+app.get('/cl-ti-itreporteec-visor/reporteec/reportecertificado/descarga', (req, res) => {
   try {
-    const filePath = path.join(UPLOADS_DIR, req.params.fileName);
+    // Leer el parámetro "doc" de la consulta
+    const fileName = req.query.doc.replace('/', ''); // Elimina la barra inicial
 
+    const filePath = path.join(UPLOADS_DIR, fileName);
+
+    // Validar si el archivo existe
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'Archivo no encontrado' });
     }
 
-    // Descargar el archivo automáticamente
-    res.setHeader('Content-Disposition', `attachment; filename="${req.params.fileName}"`);
-    res.download(filePath, req.params.fileName, (err) => {
+    // Configurar la respuesta para descarga
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.download(filePath, fileName, (err) => {
       if (err) {
         return res.status(500).json({ error: 'Error al descargar el archivo' });
       }
