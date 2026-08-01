@@ -36,7 +36,7 @@ const MainPage = () => {
 
       try {
         console.log("Enviando archivo al backend...");
-        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/upload`, formData, {
+        const response = await axios.post('https://qrfinal-vd6b.onrender.com/upload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
