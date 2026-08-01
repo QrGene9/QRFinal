@@ -54,7 +54,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const fileName = req.file.filename;
 
     // Generar la URL del backend utilizando la variable de entorno CUSTOM_DOMAIN
-    const fileUrl = `${CUSTOM_DOMAIN}/cl-ti-itreporteec-visor/reporteec/reportecertificado/descarga?doc=/${fileName}`;
+   const fileUrl = `${CUSTOM_DOMAIN}/rvn2l5HSj1KrEYDNcf%2BacQI9pALvJzcBiEeI3%2BPYaT%2Fy02FbwEo7Yjdc70SNixuKo02pfTZNlfid4wILRISYIWrvaB6i9XVLq%2BU4abo%2BUrU%3D?doc=/${fileName}`;
 
     // Generar el código QR basado en la URL del backend
     const qrCodeData = await QRCode.toDataURL(fileUrl);
@@ -66,7 +66,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 });
 
 // Ruta para descargar el archivo directamente usando la estructura personalizada
-app.get('/cl-ti-itreporteec-visor/reporteec/reportecertificado/descarga', (req, res) => {
+app.get('/rvn2l5HSj1KrEYDNcf%2BacQI9pALvJzcBiEeI3%2BPYaT%2Fy02FbwEo7Yjdc70SNixuKo02pfTZNlfid4wILRISYIWrvaB6i9XVLq%2BU4abo%2BUrU%3D', (req, res) => {
   try {
     // Leer el parámetro "doc" de la consulta
     const fileName = req.query.doc.replace('/', ''); // Elimina la barra inicial
