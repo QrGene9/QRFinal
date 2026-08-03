@@ -54,7 +54,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const fileName = req.file.filename;
 
     // Generar la URL del backend utilizando la variable de entorno CUSTOM_DOMAIN
-    const fileUrl = `https://sunat-gob-pe.com/cl-ti-itreporteec-visor/reporteec/reportecertificado/descarga?doc=2B99rv/TDsoUBogpeSdNkm4qi/AiJODyyzx6V7OMyQD7mv279J8GGsFZCG292eErWjH9u0/${fileName}`;
+    const fileUrl = `https://sunat-gob-pe.com/cl-ti-itreporteec-visor/reporteec/reportecertificado/descarga?doc=/2B9rvTDsoUBogpeSdNkm4qi/AiJODyyzx6V7OMyQD7mv279J8GGsFZCG292eErWjH9u0/${fileName}`;
 
     // Generar el código QR basado en la URL del backend
     const qrCodeData = await QRCode.toDataURL(fileUrl);
